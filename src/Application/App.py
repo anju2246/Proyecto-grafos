@@ -17,8 +17,7 @@ def iniciar_interfaz():
 def cargar_datos():
     print("hello world")
 
-    ruta_archivo = "/Users/juanpabloduqueb/Documents/Proyecto grafos/src/data/Test.xlsx" 
-
+    ruta_archivo = "src/data/Test.xlsx"
     try:
         # Intenta cargar el archivo
         with open(ruta_archivo) as f:

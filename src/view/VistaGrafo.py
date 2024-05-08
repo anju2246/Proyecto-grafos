@@ -5,28 +5,42 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 class VistaGrafo(tk.Frame):
-    def __init__(self, master, grafo=None):
+    def __init__(self, master, grafo):
         super().__init__(master)
         self.config(bg="white")
-        self.grafo = grafo  # Asignar el grafo que se pasa como argumento
+        self.grafo = grafo
 
         # Crear un lienzo para mostrar el grafo
-        self.fig, self.ax = plt.subplots(figsize=(6, 4))
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self)
+        fig, ax = plt.subplots(figsize=(6, 4))
+        self.canvas = FigureCanvasTkAgg(fig, master=self)
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
         # Renderizar el grafo en el lienzo
-        self.render_grafo()
+        self.render_grafo(ax)
 
-    def render_grafo(self):
-        if self.grafo is not None:
-            # Limpiar el eje antes de dibujar
-            self.ax.clear()
+    def render_grafo(self, ax):
+        # Obtener el grafo desde la capa de modelo
+        grafo = self.grafo
 
-            # Renderizar el grafo utilizando networkx
-            pos = nx.spring_layout(self.grafo)
-            nx.draw(self.grafo, pos, ax=self.ax, node_color='lightblue', with_labels=True)
+        # Diccionario para asignar colores a los nodos según su tipo
+        colores_nodos = {'Host': 'green', 'Invitado': 'blue', 'Prospecto': 'orange'}
 
-            # Actualizar el lienzo
-            self.canvas.draw()
+        # Obtener la posición de los nodos
+        pos = nx.spring_layout(grafo)
+
+        # Obtener los colores de los nodos según su tipo
+        node_colors = [colores_nodos[grafo.nodes[nodo]['tipo']] for nodo in grafo.nodes]
+
+        # Obtener el grado de los nodos
+        grados = [grado for _, grado in grafo.degree()]
+
+        # Calcular el tamaño de los nodos basado en su grado
+        node_sizes = [grado * 100 for grado in grados]
+
+        # Obtener los nombres de los nodos
+        nombres_nodos = {nodo: grafo.nodes[nodo]['nombre'] for nodo in grafo.nodes}
+
+        # Renderizar el grafo utilizando networkx
+        nx.draw(grafo, pos, ax=ax, node_color=node_colors, node_size=node_sizes, with_labels=True, labels=nombres_nodos)
+        ax.set_title("Grafo de Personas")

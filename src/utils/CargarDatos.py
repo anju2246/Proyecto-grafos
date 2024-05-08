@@ -1,14 +1,9 @@
 import pandas as pd
-from model.Persona import Persona 
-
-
-
-
+from model.Persona import Persona
 
 class CargarDatos:
-
     def __init__(self, ruta_archivo):
-            self.ruta_archivo = ruta_archivo
+        self.ruta_archivo = ruta_archivo
 
     def cargarDatos(self):
         # Leer el archivo de Excel en un DataFrame de Pandas
@@ -25,7 +20,11 @@ class CargarDatos:
                 # Asegurar que la fila tenga al menos 4 elementos
                 if len(fila) >= 4:
                     # [0] = ID [1] = Nombre [2] = Tipo [3] = Conexiones
-                    persona = Persona(fila[0], fila[1], fila[2], fila[3])
+                    id_persona = fila[0]
+                    nombre = fila[1]
+                    tipo = fila[2]
+                    conexiones = [int(conn) for conn in fila[3].split(',')]
+                    persona = Persona(id_persona, nombre, tipo, conexiones)
                     personas.append(persona)
                 else:
                     print(f"La fila {fila.tolist()} no tiene suficientes elementos.")
@@ -33,8 +32,5 @@ class CargarDatos:
                 # Salir del bucle si encontramos una fila vacía
                 break
 
+        print("Total de personas cargadas:", len(personas))  # Línea de depuración
         return personas
-
-      
-
-  

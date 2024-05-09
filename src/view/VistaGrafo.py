@@ -3,7 +3,6 @@ import tkinter as tk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-
 class VistaGrafo(tk.Frame):
     def __init__(self, master, grafo):
         super().__init__(master)
@@ -26,8 +25,8 @@ class VistaGrafo(tk.Frame):
         # Diccionario para asignar colores a los nodos según su tipo
         colores_nodos = {'Host': 'green', 'Invitado': 'blue', 'Prospecto': 'orange'}
 
-        # Obtener la posición de los nodos
-        pos = nx.spring_layout(grafo)
+        # Obtener la posición de los nodos usando Kamada-Kawai Layout
+        pos = nx.kamada_kawai_layout(grafo)
 
         # Obtener los colores de los nodos según su tipo
         node_colors = [colores_nodos[grafo.nodes[nodo]['tipo']] for nodo in grafo.nodes]

@@ -18,6 +18,14 @@ class VistaGrafo(tk.Frame):
         # Renderizar el grafo en el lienzo
         self.render_grafo(ax)
 
+        # Agregar campos de entrada y botón para trayectoria más corta
+        self.entrada_origen = tk.Entry(self)
+        self.entrada_origen.pack(pady=5)
+        self.entrada_destino = tk.Entry(self)
+        self.entrada_destino.pack(pady=5)
+        boton_trayectoria = tk.Button(self, text="Calcular Trayectoria", command=self.calcular_trayectoria)
+        boton_trayectoria.pack(pady=5)
+
     def render_grafo(self, ax):
         # Obtener el grafo desde la capa de modelo
         grafo = self.grafo
@@ -43,3 +51,23 @@ class VistaGrafo(tk.Frame):
         # Renderizar el grafo utilizando networkx
         nx.draw(grafo, pos, ax=ax, node_color=node_colors, node_size=node_sizes, with_labels=True, labels=nombres_nodos)
         ax.set_title("Grafo de Personas")
+
+    def calcular_trayectoria(self):
+        nodo_origen_str = self.entrada_origen.get()
+        nodo_destino_str = self.entrada_destino.get()
+        print(f"Nodo de origen (str): {nodo_origen_str}")
+        print(f"Nodo de destino (str): {nodo_destino_str}")
+        
+        try:
+            nodo_origen = int(nodo_origen_str)
+            nodo_destino = int(nodo_destino_str)
+        except ValueError:
+            print("Los valores ingresados deben ser números enteros.")
+            return
+
+        print(f"Nodo de origen (int): {nodo_origen}")
+        print(f"Nodo de destino (int): {nodo_destino}")
+
+        if nodo_origen and nodo_destino:
+            app = self.master
+            app.obtener_trayectoria_mas_corta(nodo_origen, nodo_destino)

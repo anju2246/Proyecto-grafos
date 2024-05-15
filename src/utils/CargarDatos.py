@@ -19,11 +19,18 @@ class CargarDatos:
             if fila.notna().all():
                 # Asegurar que la fila tenga al menos 4 elementos
                 if len(fila) >= 4:
-                    # [0] = ID [1] = Nombre [2] = Tipo [3] = Conexiones
-                    id_persona = fila[0]
+                    # [0] = ID, [1] = Nombre, [2] = Tipo, [3] = Conexiones
+                    id_persona = int(fila[0])
                     nombre = fila[1]
                     tipo = fila[2]
-                    conexiones = [int(conn) for conn in fila[3].split(',')]
+                    conexiones_str = str(fila[3])  # Convertir a cadena
+                    
+                    # Verificar si conexiones_str es una cadena
+                    if isinstance(conexiones_str, str):
+                        conexiones = [int(conn) for conn in conexiones_str.split(',') if conn]
+                    else:
+                        conexiones = []
+                    
                     persona = Persona(id_persona, nombre, tipo, conexiones)
                     personas.append(persona)
                 else:

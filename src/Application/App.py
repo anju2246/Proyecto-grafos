@@ -1,3 +1,4 @@
+# App.py
 import tkinter as tk
 import sys
 import os
@@ -20,7 +21,7 @@ class App(tk.Tk):
 
         # Crear la vista de inicio
         self.vista_inicio = VistaInicio(self)
-        self.vista_inicio.place(relx=0, rely=0, relwidth=1, relheight=1)  # Ocupar toda la ventana
+        self.vista_inicio.place(relx=0, rely=0, relwidth=1, relheight=1)
 
         # Cargar los datos y crear el grafo
         self.grafo = self.cargar_datos()
@@ -60,14 +61,44 @@ class App(tk.Tk):
                 for conexion in persona.conexiones:
                     arista = tuple(sorted((persona.id, conexion)))
                     aristas.add(arista)
-
             grafo.add_edges_from(aristas)
+
+            # Imprimir los nodos en el grafo
+            print(f"Nodos en el grafo: {list(grafo.nodes)}")
 
             print("Datos cargados y grafo creado correctamente.")
             return grafo
         except FileNotFoundError:
             print(f"No se pudo encontrar el archivo en la ruta: {ruta_archivo}")
             return None
+
+    def obtener_trayectoria_mas_corta(self, nodo_origen, nodo_destino):
+        try:
+            ruta = nx.shortest_path(self.grafo, source=nodo_origen, target=nodo_destino)
+            print(f"La trayectoria más corta de {nodo_origen} a {nodo_destino} es: {ruta}")
+        except nx.NetworkXNoPath:
+            print(f"No existe una trayectoria entre {nodo_origen} y {nodo_destino}")
+        except nx.NodeNotFound as e:
+            print(f"Error: {e}")
+
+            
+    def calcular_centralidades(self):
+        print("Calculando centralidades...")
+        grado_centrality = nx.degree_centrality(self.grafo)
+        betweenness_centrality = nx.betweenness_centrality(self.grafo)
+        closeness_centrality = nx.closeness_centrality(self.grafo)
+
+        print("\nCentralidad de Grado:")
+        for nodo, grado in grado_centrality.items():
+            print(f"Nodo {nodo}: {grado:.4f}")
+
+        print("\nCentralidad de Intermediación:")
+        for nodo, intermediacion in betweenness_centrality.items():
+            print(f"Nodo {nodo}: {intermediacion:.4f}")
+
+        print("\nCentralidad de Cercanía:")
+        for nodo, cercania in closeness_centrality.items():
+            print(f"Nodo {nodo}: {cercania:.4f}")
 
 if __name__ == "__main__":
     app = App()

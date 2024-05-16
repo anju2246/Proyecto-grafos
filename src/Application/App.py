@@ -1,4 +1,3 @@
-# App.py
 import tkinter as tk
 import sys
 import os
@@ -17,7 +16,7 @@ class App(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Mi Aplicación de Grafos")
-        self.geometry("800x600")
+        self.geometry("1400x800")
 
         # Crear la vista de inicio
         self.vista_inicio = VistaInicio(self)

@@ -25,12 +25,15 @@ class VistaGrafo(tk.Frame):
         self.frame_dashboard.pack(side=tk.LEFT, fill=tk.BOTH, padx=10, pady=10, ipadx=10, ipady=10)
 
         # Crear el lienzo para el grafo
-        self.fig, self.ax = plt.subplots(figsize=(6, 4))  # Eliminar facecolor aquí
+        self.fig, self.ax = plt.subplots(figsize=(6, 4))
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.frame_grafo)
         self.ax.set_facecolor('dimgray')  # Establecer el fondo oscuro del lienzo del grafo
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
+        # Ajustar parámetros del subplot
+        plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0.2, hspace=0.2)
+        
         # Agregar la barra de herramientas de navegación
         self.toolbar = NavigationToolbar2Tk(self.canvas, self.frame_grafo)
         self.toolbar.update()
@@ -67,7 +70,6 @@ class VistaGrafo(tk.Frame):
         self.create_round_button("Calcular Trayectoria", self.calcular_trayectoria, "#029FE1").pack(pady=5, ipadx=10, ipady=5)
         self.create_round_button("Centralidad de Grado", self.mostrar_centralidad_grado, "#029FE1").pack(pady=5, ipadx=10, ipady=5)
 
-
     def create_round_button(self, text, command, color):
         button_frame = tk.Frame(self.frame_dashboard, bg="black")
         button_frame.pack(pady=5)
@@ -88,21 +90,16 @@ class VistaGrafo(tk.Frame):
 
         return button_frame
 
-
     def on_enter_button(self, button_canvas):
         button_canvas.config(bg="#0370A1")  # Cambiar color de fondo cuando el mouse entra
 
     def on_leave_button(self, button_canvas, color):
         button_canvas.config(bg=color)  # Restaurar color original cuando el mouse sale
 
-
-
-
     def render_grafo(self):
-
         self.ax.clear()  # Limpiar el eje antes de redibujar
         self.ax.set_facecolor('#202946')  # Establecer el color de fondo del eje
-        
+
         # Obtener la posición de los nodos usando Kamada-Kawai Layout
         pos = nx.kamada_kawai_layout(self.grafo)
 
@@ -119,16 +116,15 @@ class VistaGrafo(tk.Frame):
 
         # Crear un rectángulo que cubra todo el lienzo y establecer su color de fondo
         self.ax.add_patch(plt.Rectangle((-extra_space // 2, -extra_space // 2), canvas_width, canvas_height, color='#202946', zorder=-1))
-
+        self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         # Actualizar el lienzo para mostrar el rectángulo
         self.canvas.draw()
-
 
     def draw_glowing_graph(self, pos):
         n_lines = 10
         diff_linewidth = 1.05
         alpha_value = 0.03
-        
+
         for edge in self.grafo.edges():
             for n in range(1, n_lines+1):
                 nx.draw_networkx_edges(
@@ -137,7 +133,7 @@ class VistaGrafo(tk.Frame):
                     width=2 + (diff_linewidth * n),
                     alpha=alpha_value
                 )
-        
+
         for node in self.grafo.nodes():
             for n in range(1, n_lines+1):
                 nx.draw_networkx_nodes(
@@ -182,7 +178,7 @@ class VistaGrafo(tk.Frame):
     def mostrar_centralidad_grado(self):
         print("Calculando centralidades...")
         grado_centrality = nx.degree_centrality(self.grafo)
-        
+
         # Obtener los valores de centralidad y normalizarlos para el mapa de colores
         centrality_values = np.array(list(grado_centrality.values()))
         cmap = plt.get_cmap('winter')  # Usar la paleta 'winter' para tonos cyan
@@ -197,4 +193,3 @@ class VistaGrafo(tk.Frame):
     def reset_colors(self):
         self.node_colors = {node: '#0EF9FF' for node in self.grafo.nodes()}
         self.edge_colors = {edge: '#0EF9FF' for edge in self.grafo.edges()}
-

@@ -26,6 +26,7 @@ class App(tk.Tk):
 
         # Cargar los datos y crear el grafo
         self.grafo = self.cargar_datos()
+        self.node_sizes = {}  # Inicializar self.node_sizes como un diccionario vacío
 
         # Crear la vista del grafo y pasar el grafo como argumento
         self.vista_grafo = VistaGrafo(self, grafo=self.grafo)

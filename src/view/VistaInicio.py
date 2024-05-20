@@ -8,7 +8,7 @@ class VistaInicio(tk.Frame):
         self.place(relx=0, rely=0, relwidth=1, relheight=1)  # Ocupar toda la ventana
 
         # Cargar imagen de fondo
-        self.bg_image = ImageTk.PhotoImage(Image.open("/Users/juanpabloduqueb/Documents/Proyecto grafos/src/data/Interfaz proyecto grafos.png"))
+        self.bg_image = ImageTk.PhotoImage(Image.open("src/data/Interfaz proyecto grafos.png"))
 
         # Crear canvas para manejar la imagen
         self.canvas = tk.Canvas(self, width=1400, height=800)

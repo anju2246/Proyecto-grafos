@@ -15,6 +15,8 @@ class VistaGrafo(tk.Frame):
         super().__init__(master)
         self.config(bg="black")  # Fondo del Frame principal
         self.grafo = grafo
+        self.node_sizes = {}  # Inicializar self.node_sizes como un diccionario vacío
+
 
         # Crear un frame para el lienzo del grafo y la barra de herramientas
         self.frame_grafo = tk.Frame(self, bg="#202946")  # Fondo oscuro
@@ -31,6 +33,22 @@ class VistaGrafo(tk.Frame):
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
+        # Diccionario para los colores de nodos y aristas
+        self.node_colors = {}
+        self.node_text_colors = {}
+        for node in self.grafo.nodes():
+            if self.grafo.nodes[node]['tipo'] == 'host':
+                self.node_colors[node] = '#FFE699'  # Amarillo para hosts
+                self.node_text_colors[node] = 'black'
+            elif self.grafo.nodes[node]['tipo'] == 'prospecto':
+                self.node_colors[node] = '#FFA7A7'  # Rosa para prospectos
+                self.node_text_colors[node] = 'white'
+            else:
+                self.node_colors[node] = '#0EF9FF'  # Cyan para invitados
+                self.node_text_colors[node] = 'black'
+
+        self.edge_colors = {edge: '#0EF9FF' for edge in self.grafo.edges()}
+
         # Ajustar parámetros del subplot
         plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0.2, hspace=0.2)
         
@@ -39,9 +57,7 @@ class VistaGrafo(tk.Frame):
         self.toolbar.update()
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        # Diccionario para los colores de nodos y aristas
-        self.node_colors = {node: '#0EF9FF' for node in self.grafo.nodes()}
-        self.edge_colors = {edge: '#0EF9FF' for edge in self.grafo.edges()}
+    
 
         # Renderizar el grafo en el lienzo
         self.render_grafo()
@@ -69,6 +85,8 @@ class VistaGrafo(tk.Frame):
         # Crear los botones redondeados
         self.create_round_button("Calcular Trayectoria", self.calcular_trayectoria, "#029FE1").pack(pady=5, ipadx=10, ipady=5)
         self.create_round_button("Centralidad de Grado", self.mostrar_centralidad_grado, "#029FE1").pack(pady=5, ipadx=10, ipady=5)
+            # Agregar el botón de reset
+        self.create_round_button("Restablecer Colores", self.resetear_colores, "#029FE1").pack(pady=5, ipadx=10, ipady=5)
 
     def create_round_button(self, text, command, color):
         button_frame = tk.Frame(self.frame_dashboard, bg="black")
@@ -121,6 +139,7 @@ class VistaGrafo(tk.Frame):
         self.canvas.draw()
 
     def draw_glowing_graph(self, pos):
+        
         n_lines = 10
         diff_linewidth = 1.05
         alpha_value = 0.03
@@ -139,13 +158,23 @@ class VistaGrafo(tk.Frame):
                 nx.draw_networkx_nodes(
                     self.grafo, pos, nodelist=[node], ax=self.ax,
                     node_color=self.node_colors[node],
-                    node_size=300,
+                    node_size=400,
                     linewidths=2 + (diff_linewidth * n),
                     alpha=alpha_value
                 )
 
         # Dibujar nodos y aristas finales
         nx.draw(self.grafo, pos, ax=self.ax, node_color=list(self.node_colors.values()), edge_color=list(self.edge_colors.values()), with_labels=True, font_color='white')
+
+        # Etiquetar los nodos con los nombres de las personas
+        labels = {node: self.grafo.nodes[node]['nombre'] for node in self.grafo.nodes()}
+        for node, label in labels.items():
+            x, y = pos[node]
+            self.ax.text(x, y - 0.1, label, fontsize=8, ha='center', va='top', color='white')
+
+
+
+            
 
     def calcular_trayectoria(self):
         origen = self.entrada_origen.get()
@@ -170,6 +199,10 @@ class VistaGrafo(tk.Frame):
             # Redibujar el grafo
             self.render_grafo()
 
+            # Limpiar los campos de entrada
+            self.entrada_origen.delete(0, tk.END)
+            self.entrada_destino.delete(0, tk.END)
+
         except nx.NetworkXNoPath:
             print(f"No existe una trayectoria entre {origen} y {destino}")
         except nx.NodeNotFound as e:
@@ -181,15 +214,46 @@ class VistaGrafo(tk.Frame):
 
         # Obtener los valores de centralidad y normalizarlos para el mapa de colores
         centrality_values = np.array(list(grado_centrality.values()))
-        cmap = plt.get_cmap('winter')  # Usar la paleta 'winter' para tonos cyan
+        cmap = plt.get_cmap('Reds')  # Usar la paleta 'Reds' para tonos rosa
         node_colors = cmap(centrality_values)
 
         # Crear un dict de colores para nodos
         self.node_colors = {node: node_colors[i] for i, node in enumerate(self.grafo.nodes())}
 
+        # Resetear colores de aristas
+        self.edge_colors = {edge: 'dimgray' for edge in self.grafo.edges()}
+
+        # Asignar colores de aristas según el nodo más central cercano
+        for edge in self.grafo.edges():
+            node1, node2 = edge
+            if grado_centrality[node1] >= grado_centrality[node2]:
+                self.edge_colors[edge] = self.node_colors[node1]
+            else:
+                self.edge_colors[edge] = self.node_colors[node2]
+
+        # Ajustar tamaños de nodos según su centralidad
+        node_sizes = [500 * centrality for centrality in centrality_values]
+        self.node_sizes = dict(zip(self.grafo.nodes(), node_sizes))
+
         # Redibujar el grafo con los nuevos colores de centralidad
         self.render_grafo()
 
     def reset_colors(self):
-        self.node_colors = {node: '#0EF9FF' for node in self.grafo.nodes()}
+        self.node_colors = {}
+        self.node_text_colors = {}
+        for node in self.grafo.nodes():
+            if self.grafo.nodes[node]['tipo'] == 'host':
+                self.node_colors[node] = '#FFE699'  # Amarillo para hosts
+                self.node_text_colors[node] = 'black'
+            elif self.grafo.nodes[node]['tipo'] == 'prospecto':
+                self.node_colors[node] = '#FFA7A7'  # Rosa para prospectos
+                self.node_text_colors[node] = 'white'
+            else:
+                self.node_colors[node] = '#0EF9FF'  # Cyan para invitados
+                self.node_text_colors[node] = 'black'
+
         self.edge_colors = {edge: '#0EF9FF' for edge in self.grafo.edges()}
+
+    def resetear_colores(self):
+        self.reset_colors()
+        self.render_grafo()
